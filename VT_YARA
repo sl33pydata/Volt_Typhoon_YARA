@@ -1,0 +1,40 @@
+rule VoltTyphoon_Combined {
+    meta:
+        description = "Detect Volt Typhoon related activities including ShellJSP, EncryptJSP, and FRP tool usage"
+        author = "sl33pydata"
+        date = "2025-01-08"
+        reference = "Based on combined rules: ShellJSP, EncryptJSP, CustomFRPClient, and HACKTOOL_FRPClient"
+
+    strings:
+        // ShellJSP strings
+        $shell_1 = "decrypt(fpath)"
+        $shell_2 = "decrypt(fcontext)"
+        $shell_3 = "decrypt(commandEnc)"
+        $shell_4 = "upload failed!"
+        $shell_5 = "aes.encrypt(allStr)"
+        $shell_6 = "newid"
+
+        // EncryptJSP strings
+        $encrypt_1 = "AEScrypt"
+        $encrypt_2 = "AES/CBC/PKCS5Padding"
+        $encrypt_3 = "SecretKeySpec"
+        $encrypt_4 = "FileOutputStream"
+        $encrypt_5 = "getParameter"
+        $encrypt_6 = "new ProcessBuilder"
+        $encrypt_7 = "new BufferedReader"
+        $encrypt_8 = "readLine()"
+
+        // FRP tool strings
+        $frp_1 = "%!PS-Adobe-" nocase ascii wide
+        $frp_2 = "github.com/fatedier/frp/cmd/frpc" nocase ascii wide
+        $frp_3 = "github.com/fatedier/frp/cmd/frpc/sub.startService" nocase ascii wide
+        $frp_4 = "MAGA2024!!!" nocase ascii wide
+        $frp_5 = "HTTP_PROXYHost: %s" nocase ascii wide
+
+    condition:
+        filesize < 50KB and (
+            (4 of ($shell_*) or 6 of ($encrypt_*)) or
+            (all of ($frp_1, $frp_2, $frp_3, $frp_4, $frp_5)) or
+            (3 of ($frp_1, $frp_2, $frp_3, $frp_5))
+        )
+}
